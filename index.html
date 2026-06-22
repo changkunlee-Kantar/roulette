@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AX팀 커피 내기 룰렛</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      color: #2d2a32;
+      background-color: #fdf2f8;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cg fill='none' stroke='%23e9b4d4' stroke-width='1.2' opacity='0.55'%3E%3Ccircle cx='30' cy='30' r='8' fill='%23f5c6e0'/%3E%3Ccircle cx='30' cy='30' r='3' fill='%23e9b4d4'/%3E%3Cpath d='M30 22 Q26 14 30 6 Q34 14 30 22' fill='%23f0a8cc'/%3E%3Cpath d='M22 30 Q14 26 6 30 Q14 34 22 30' fill='%23f0a8cc'/%3E%3Cpath d='M30 38 Q26 46 30 54 Q34 46 30 38' fill='%23f0a8cc'/%3E%3Cpath d='M38 30 Q46 26 54 30 Q46 34 38 30' fill='%23f0a8cc'/%3E%3Cpath d='M24 24 Q18 16 12 12 Q20 18 24 24' fill='%23f5c6e0'/%3E%3Cpath d='M36 24 Q42 16 48 12 Q40 18 36 24' fill='%23f5c6e0'/%3E%3Cpath d='M24 36 Q18 44 12 48 Q20 42 24 36' fill='%23f5c6e0'/%3E%3Cpath d='M36 36 Q42 44 48 48 Q40 42 36 36' fill='%23f5c6e0'/%3E%3C/g%3E%3Cg fill='none' stroke='%23c9b8e8' stroke-width='1' opacity='0.45' transform='translate(60 60)'%3E%3Ccircle cx='0' cy='0' r='7' fill='%23ddd0f5'/%3E%3Ccircle cx='0' cy='0' r='2.5' fill='%23c9b8e8'/%3E%3Cpath d='M0 -9 Q-3 -16 0 -22 Q3 -16 0 -9' fill='%23d4c4f0'/%3E%3Cpath d='M-9 0 Q-16 -3 -22 0 Q-16 3 -9 0' fill='%23d4c4f0'/%3E%3Cpath d='M0 9 Q-3 16 0 22 Q3 16 0 9' fill='%23d4c4f0'/%3E%3Cpath d='M9 0 Q16 -3 22 0 Q16 3 9 0' fill='%23d4c4f0'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 120px 120px;
+      padding: 2rem 1.25rem 3rem;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    header h1 {
+      font-size: clamp(2.25rem, 6.5vw, 3.75rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      background: linear-gradient(135deg, #e85d4c, #c44d9a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.5rem;
+    }
+
+    header p {
+      color: #6b6570;
+      font-size: 1rem;
+    }
+
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(255, 255, 255, 0.82);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: 0 8px 32px rgba(180, 120, 160, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    .panel h2 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #4a4450;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .input-row input {
+      flex: 1;
+      padding: 0.65rem 1rem;
+      border: 2px solid #e8dce8;
+      border-radius: 12px;
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+      font-family: inherit;
+    }
+
+    .input-row input:focus {
+      border-color: #e85d4c;
+    }
+
+    .input-row input:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .btn {
+      padding: 0.65rem 1.25rem;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, opacity 0.15s;
+      font-family: inherit;
+    }
+
+    .btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .btn-add {
+      background: #f0e6f5;
+      color: #7c5a9e;
+    }
+
+    .btn-add:hover:not(:disabled) {
+      background: #e5d5ef;
+    }
+
+    .participant-list {
+      list-style: none;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .participant-list li {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.6rem 0.75rem;
+      margin-bottom: 0.4rem;
+      background: #faf7fc;
+      border-radius: 10px;
+      border: 1px solid #f0e8f4;
+    }
+
+    .participant-list .name {
+      font-weight: 500;
+    }
+
+    .participant-list .color-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      margin-right: 0.6rem;
+      flex-shrink: 0;
+    }
+
+    .participant-list .left {
+      display: flex;
+      align-items: center;
+    }
+
+    .btn-remove {
+      background: transparent;
+      color: #c44d6a;
+      padding: 0.3rem 0.6rem;
+      font-size: 0.85rem;
+      border: 1px solid #f0c4d0;
+      border-radius: 8px;
+    }
+
+    .btn-remove:hover:not(:disabled) {
+      background: #fff0f3;
+    }
+
+    .empty-msg {
+      color: #9a929e;
+      font-size: 0.9rem;
+      text-align: center;
+      padding: 1.5rem 0;
+    }
+
+    .wheel-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .wheel-wrapper {
+      position: relative;
+      width: min(100%, 380px);
+      aspect-ratio: 1;
+      margin-bottom: 1.5rem;
+    }
+
+    .wheel-pointer {
+      position: absolute;
+      top: -4px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 0;
+      height: 0;
+      border-left: 14px solid transparent;
+      border-right: 14px solid transparent;
+      border-top: 28px solid #2d2a32;
+      z-index: 10;
+      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+    }
+
+    .wheel-pointer::after {
+      content: '';
+      position: absolute;
+      top: -26px;
+      left: -10px;
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 20px solid #e85d4c;
+    }
+
+    #wheelCanvas {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12), inset 0 0 0 6px rgba(255,255,255,0.8);
+    }
+
+    .wheel-placeholder {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #9a929e;
+      font-size: 0.95rem;
+      text-align: center;
+      padding: 2rem;
+      border: 3px dashed #e0d4e8;
+    }
+
+    .btn-spin {
+      padding: 1rem 3rem;
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: white;
+      background: linear-gradient(135deg, #ff7b54, #e85d4c, #d44d8a);
+      border-radius: 50px;
+      box-shadow: 0 6px 24px rgba(232, 93, 76, 0.4);
+    }
+
+    .btn-spin:hover:not(:disabled) {
+      box-shadow: 0 8px 32px rgba(232, 93, 76, 0.55);
+      transform: translateY(-1px);
+    }
+
+    .hint-msg {
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      color: #c44d6a;
+      text-align: center;
+      min-height: 1.2em;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: #2d2a32;
+      color: white;
+      padding: 0.75rem 1.5rem;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      opacity: 0;
+      transition: transform 0.3s, opacity 0.3s;
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(45, 42, 50, 0.55);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s, visibility 0.3s;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .modal-card {
+      background: white;
+      border-radius: 24px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      max-width: 420px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+      transform: scale(0.85);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    .modal-overlay.active .modal-card {
+      transform: scale(1);
+    }
+
+    .modal-subtitle {
+      font-size: 1rem;
+      color: #9a929e;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-winner {
+      font-size: clamp(2.5rem, 8vw, 3.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #e85d4c, #c44d9a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 0.25rem;
+      line-height: 1.2;
+    }
+
+    .modal-coffee {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+
+    .btn-respin {
+      margin-top: 1.5rem;
+      padding: 0.85rem 2rem;
+      background: #f5f0fa;
+      color: #7c5a9e;
+      border: 2px solid #e0d4f0;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .btn-respin:hover {
+      background: #ebe0f5;
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 1.25rem 1rem 2rem;
+      }
+
+      .main-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .wheel-wrapper {
+        width: min(100%, 300px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>☕ AX팀 커피 내기 룰렛</h1>
+      <p>오늘 커피 쏠 사람은 누구?</p>
+    </header>
+
+    <div class="main-grid">
+      <section class="panel">
+        <h2>참가자</h2>
+        <div class="input-row">
+          <input type="text" id="nameInput" placeholder="이름을 입력하세요" maxlength="20" autocomplete="off">
+          <button class="btn btn-add" id="addBtn">추가</button>
+        </div>
+        <ul class="participant-list" id="participantList"></ul>
+        <p class="empty-msg" id="emptyMsg">참가자를 추가해 주세요 (2명 이상)</p>
+      </section>
+
+      <section class="panel wheel-section">
+        <h2>룰렛</h2>
+        <div class="wheel-wrapper">
+          <div class="wheel-pointer"></div>
+          <canvas id="wheelCanvas" width="760" height="760" style="display:none;"></canvas>
+          <div class="wheel-placeholder" id="wheelPlaceholder">참가자를 2명 이상<br>추가해 주세요</div>
+        </div>
+        <button class="btn btn-spin" id="spinBtn" disabled>돌려라!</button>
+        <p class="hint-msg" id="hintMsg"></p>
+      </section>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-card" id="modalCard">
+      <div class="modal-coffee">☕</div>
+      <p class="modal-subtitle">오늘의 커피 당첨자!</p>
+      <p class="modal-winner" id="modalWinner"></p>
+      <button class="btn btn-respin" id="respinBtn">다시 돌리기</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const EXCLUDED_NAME = '이창근';
+    const COLORS = [
+      '#FF6B6B', '#4ECDC4', '#FFE66D', '#A66CFF',
+      '#FF8C42', '#6BCB77', '#4D96FF', '#FF6FB5',
+      '#C9B1FF', '#F9A826', '#00C9A7', '#E85D4C'
+    ];
+    const FAST_PHASE_MS = 4500;
+    const SUSPENSE_PHASE_MS = 5000;
+    const SPIN_DURATION = FAST_PHASE_MS + SUSPENSE_PHASE_MS;
+
+    const DEFAULT_PARTICIPANTS = [
+      '이창근', '고승현', '윤지언', '김은선', '문소현',
+      '임주희', '이민경', '한길성', '정종현', '최윤령', '전은진'
+    ];
+
+    let participants = [...DEFAULT_PARTICIPANTS];
+    let isSpinning = false;
+    let currentRotation = 0;
+    let animationId = null;
+
+    const nameInput = document.getElementById('nameInput');
+    const addBtn = document.getElementById('addBtn');
+    const participantList = document.getElementById('participantList');
+    const emptyMsg = document.getElementById('emptyMsg');
+    const wheelCanvas = document.getElementById('wheelCanvas');
+    const wheelPlaceholder = document.getElementById('wheelPlaceholder');
+    const spinBtn = document.getElementById('spinBtn');
+    const hintMsg = document.getElementById('hintMsg');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalCard = document.getElementById('modalCard');
+    const modalWinner = document.getElementById('modalWinner');
+    const respinBtn = document.getElementById('respinBtn');
+    const toast = document.getElementById('toast');
+
+    const ctx = wheelCanvas.getContext('2d');
+
+    function getEligibleWinners() {
+      return participants.filter(name => name !== EXCLUDED_NAME);
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    function addParticipant(name) {
+      const trimmed = name.trim();
+      if (!trimmed) return;
+      if (participants.includes(trimmed)) {
+        showToast('이미 추가된 이름입니다.');
+        return;
+      }
+      participants.push(trimmed);
+      nameInput.value = '';
+      renderParticipantList();
+      updateUI();
+    }
+
+    function removeParticipant(index) {
+      if (isSpinning) return;
+      participants.splice(index, 1);
+      renderParticipantList();
+      updateUI();
+    }
+
+    function renderParticipantList() {
+      participantList.innerHTML = '';
+      participants.forEach((name, index) => {
+        const li = document.createElement('li');
+        const color = COLORS[index % COLORS.length];
+        li.innerHTML = `
+          <span class="left">
+            <span class="color-dot" style="background:${color}"></span>
+            <span class="name">${escapeHtml(name)}</span>
+          </span>
+          <button class="btn btn-remove" data-index="${index}">삭제</button>
+        `;
+        participantList.appendChild(li);
+      });
+
+      emptyMsg.style.display = participants.length === 0 ? 'block' : 'none';
+
+      participantList.querySelectorAll('.btn-remove').forEach(btn => {
+        btn.addEventListener('click', () => removeParticipant(Number(btn.dataset.index)));
+      });
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function updateUI() {
+      const eligible = getEligibleWinners();
+      const canShowWheel = participants.length >= 2;
+      const canSpin = canShowWheel && eligible.length > 0 && !isSpinning;
+
+      wheelCanvas.style.display = canShowWheel ? 'block' : 'none';
+      wheelPlaceholder.style.display = canShowWheel ? 'none' : 'flex';
+
+      spinBtn.disabled = !canSpin;
+
+      nameInput.disabled = isSpinning;
+      addBtn.disabled = isSpinning;
+      participantList.querySelectorAll('.btn-remove').forEach(btn => {
+        btn.disabled = isSpinning;
+      });
+
+      if (participants.length < 2) {
+        hintMsg.textContent = '';
+      } else if (eligible.length === 0) {
+        hintMsg.textContent = '당첨 가능한 참가자가 없습니다.';
+      } else {
+        hintMsg.textContent = '';
+      }
+
+      if (canShowWheel) {
+        drawWheel(currentRotation);
+      }
+    }
+
+    function drawWheel(rotation) {
+      const size = wheelCanvas.width;
+      const center = size / 2;
+      const radius = center - 8;
+      const count = participants.length;
+      const sliceAngle = (2 * Math.PI) / count;
+
+      ctx.clearRect(0, 0, size, size);
+      ctx.save();
+      ctx.translate(center, center);
+      ctx.rotate(rotation);
+
+      for (let i = 0; i < count; i++) {
+        const startAngle = i * sliceAngle - Math.PI / 2;
+        const endAngle = startAngle + sliceAngle;
+
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.arc(0, 0, radius, startAngle, endAngle);
+        ctx.closePath();
+        ctx.fillStyle = COLORS[i % COLORS.length];
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+
+        ctx.save();
+        const textAngle = startAngle + sliceAngle / 2;
+        ctx.rotate(textAngle);
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = 'rgba(0,0,0,0.35)';
+        ctx.shadowBlur = 4;
+
+        const name = participants[i];
+        const fontSize = Math.min(28, Math.max(14, 200 / name.length));
+        ctx.font = `bold ${fontSize}px "Apple SD Gothic Neo", "Malgun Gothic", sans-serif`;
+
+        const textRadius = radius * 0.65;
+        ctx.fillText(name, textRadius, 0);
+        ctx.restore();
+      }
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 24, 0, 2 * Math.PI);
+      ctx.fillStyle = '#ffffff';
+      ctx.shadowColor = 'transparent';
+      ctx.fill();
+      ctx.strokeStyle = '#e8dce8';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.restore();
+    }
+
+    function suspenseEase(elapsed) {
+      const fastPortion = 0.82;
+
+      if (elapsed <= FAST_PHASE_MS) {
+        const t = elapsed / FAST_PHASE_MS;
+        return fastPortion * (1 - Math.pow(1 - t, 2.2));
+      }
+
+      const slowT = (elapsed - FAST_PHASE_MS) / SUSPENSE_PHASE_MS;
+      const slowEase = 1 - Math.pow(1 - Math.min(slowT, 1), 5);
+      return fastPortion + (1 - fastPortion) * slowEase;
+    }
+
+    function getTargetRotation(winnerIndex) {
+      const count = participants.length;
+      const sliceAngle = (2 * Math.PI) / count;
+      const segmentCenter = winnerIndex * sliceAngle + sliceAngle / 2 - Math.PI / 2;
+      const pointerAngle = -Math.PI / 2;
+      let target = pointerAngle - segmentCenter;
+
+      const minTarget = currentRotation + (4 + Math.floor(Math.random() * 3)) * 2 * Math.PI;
+      while (target < minTarget) {
+        target += 2 * Math.PI;
+      }
+
+      return target;
+    }
+
+    function spinWheel() {
+      const eligible = getEligibleWinners();
+      if (isSpinning || participants.length < 2 || eligible.length === 0) {
+        if (eligible.length === 0 && participants.length >= 2) {
+          showToast('당첨 가능한 참가자가 없습니다.');
+        }
+        return;
+      }
+
+      isSpinning = true;
+      updateUI();
+
+      const winnerName = eligible[Math.floor(Math.random() * eligible.length)];
+      const winnerIndex = participants.indexOf(winnerName);
+      const targetRotation = getTargetRotation(winnerIndex);
+      const startRotation = currentRotation;
+      const startTime = performance.now();
+
+      function animate(now) {
+        const elapsed = Math.min(now - startTime, SPIN_DURATION);
+        const eased = suspenseEase(elapsed);
+
+        currentRotation = startRotation + (targetRotation - startRotation) * eased;
+        drawWheel(currentRotation);
+
+        if (elapsed < SPIN_DURATION) {
+          animationId = requestAnimationFrame(animate);
+        } else {
+          currentRotation = targetRotation;
+          drawWheel(currentRotation);
+          isSpinning = false;
+          updateUI();
+          setTimeout(() => showWinnerModal(winnerName), 300);
+        }
+      }
+
+      if (animationId) cancelAnimationFrame(animationId);
+      animationId = requestAnimationFrame(animate);
+    }
+
+    function showWinnerModal(winner) {
+      modalWinner.textContent = winner;
+      modalOverlay.classList.add('active');
+    }
+
+    function closeModal() {
+      modalOverlay.classList.remove('active');
+    }
+
+    addBtn.addEventListener('click', () => addParticipant(nameInput.value));
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') addParticipant(nameInput.value);
+    });
+    spinBtn.addEventListener('click', spinWheel);
+    respinBtn.addEventListener('click', () => {
+      closeModal();
+    });
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) closeModal();
+    });
+    modalCard.addEventListener('click', (e) => e.stopPropagation());
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modalOverlay.classList.contains('active')) {
+        closeModal();
+      }
+    });
+
+    renderParticipantList();
+    updateUI();
+  </script>
+</body>
+</html>
