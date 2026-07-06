@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AX팀 메모장</title>
+  <style>
+    :root {
+      --bg1: #0f172a;
+      --bg2: #111827;
+      --card: rgba(15, 23, 42, 0.72);
+      --card-border: rgba(148, 163, 184, 0.18);
+      --text: #e5e7eb;
+      --muted: #94a3b8;
+      --accent: #22c55e;
+      --accent-2: #38bdf8;
+      --danger: #f87171;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56, 189, 248, 0.22), transparent 30%),
+        radial-gradient(circle at top right, rgba(34, 197, 94, 0.16), transparent 28%),
+        linear-gradient(160deg, var(--bg1), var(--bg2));
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(760px, 100%);
+      background: var(--card);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 28px 28px 18px;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(56, 189, 248, 0.12);
+      color: #7dd3fc;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    h1 {
+      margin: 14px 0 8px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.1;
+    }
+
+    .subtitle {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      padding: 20px 28px;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(15, 23, 42, 0.8);
+      color: var(--text);
+      padding: 16px 18px;
+      border-radius: 16px;
+      font-size: 16px;
+      outline: none;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: rgba(56, 189, 248, 0.75);
+      transform: translateY(-1px);
+    }
+
+    button {
+      border: 0;
+      border-radius: 16px;
+      padding: 0 18px;
+      min-height: 54px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.18s ease, filter 0.18s ease, background 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.03);
+    }
+
+    button:active {
+      transform: translateY(0);
+    }
+
+    .add-btn {
+      color: #082f49;
+      background: linear-gradient(135deg, #7dd3fc, #34d399);
+    }
+
+    .stats {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      padding: 0 28px 18px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .stat {
+      padding: 8px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.45);
+    }
+
+    .list {
+      list-style: none;
+      margin: 0;
+      padding: 0 12px 16px;
+    }
+
+    .item {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 14px;
+      align-items: center;
+      padding: 16px 16px;
+      margin: 0 16px 12px;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.58);
+    }
+
+    .check {
+      width: 20px;
+      height: 20px;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .text {
+      word-break: break-word;
+      line-height: 1.5;
+      transition: color 0.2s ease, opacity 0.2s ease, text-decoration 0.2s ease;
+    }
+
+    .item.done .text {
+      color: #9ca3af;
+      text-decoration: line-through;
+      opacity: 0.72;
+    }
+
+    .delete-btn {
+      min-height: 38px;
+      padding: 0 14px;
+      border-radius: 12px;
+      background: rgba(248, 113, 113, 0.14);
+      color: #fecaca;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .empty {
+      padding: 30px 28px 36px;
+      text-align: center;
+      color: var(--muted);
+      display: none;
+    }
+
+    .empty.show {
+      display: block;
+    }
+
+    .footer {
+      padding: 0 28px 28px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    @media (max-width: 640px) {
+      .header,
+      .composer,
+      .stats,
+      .footer {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .composer {
+        grid-template-columns: 1fr;
+      }
+
+      .item {
+        margin-left: 8px;
+        margin-right: 8px;
+        grid-template-columns: auto 1fr;
+      }
+
+      .delete-btn {
+        grid-column: 2;
+        justify-self: start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app" aria-label="AX팀 메모장 앱">
+    <section class="header">
+      <div class="eyebrow">AX팀 Todo</div>
+      <h1>할 일을 빠르게 적고 바로 처리하세요</h1>
+      <p class="subtitle">추가, 완료 체크, 삭제가 가능한 간단한 메모장형 할 일 관리 앱입니다. 내용은 브라우저에 저장됩니다.</p>
+    </section>
+
+    <section class="composer" aria-label="할 일 입력">
+      <input id="todoInput" type="text" placeholder="예: 주간 회의 자료 정리" maxlength="120" autocomplete="off" />
+      <button class="add-btn" id="addBtn" type="button">추가</button>
+    </section>
+
+    <div class="stats" aria-label="작업 상태">
+      <div class="stat" id="totalStat">전체 0개</div>
+      <div class="stat" id="activeStat">진행 중 0개</div>
+      <div class="stat" id="doneStat">완료 0개</div>
+    </div>
+
+    <ul class="list" id="todoList" aria-label="할 일 목록"></ul>
+    <div class="empty" id="emptyState">아직 등록된 할 일이 없습니다. 위에 내용을 입력해 추가하세요.</div>
+
+    <div class="footer">팁: Enter 키로도 추가할 수 있습니다.</div>
+  </main>
+
+  <script>
+    const STORAGE_KEY = "ax-team-todo-list";
+
+    const input = document.getElementById("todoInput");
+    const addBtn = document.getElementById("addBtn");
+    const list = document.getElementById("todoList");
+    const emptyState = document.getElementById("emptyState");
+    const totalStat = document.getElementById("totalStat");
+    const activeStat = document.getElementById("activeStat");
+    const doneStat = document.getElementById("doneStat");
+
+    let todos = loadTodos();
+
+    function loadTodos() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTodos() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    }
+
+    function createId() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    }
+
+    function addTodo() {
+      const text = input.value.trim();
+      if (!text) {
+        input.focus();
+        return;
+      }
+
+      todos.unshift({
+        id: createId(),
+        text,
+        done: false,
+      });
+
+      input.value = "";
+      saveTodos();
+      render();
+      input.focus();
+    }
+
+    function toggleTodo(id) {
+      todos = todos.map((todo) =>
+        todo.id === id ? { ...todo, done: !todo.done } : todo
+      );
+      saveTodos();
+      render();
+    }
+
+    function deleteTodo(id) {
+      todos = todos.filter((todo) => todo.id !== id);
+      saveTodos();
+      render();
+    }
+
+    function renderStats() {
+      const total = todos.length;
+      const done = todos.filter((todo) => todo.done).length;
+      const active = total - done;
+
+      totalStat.textContent = `전체 ${total}개`;
+      activeStat.textContent = `진행 중 ${active}개`;
+      doneStat.textContent = `완료 ${done}개`;
+    }
+
+    function render() {
+      list.innerHTML = "";
+
+      for (const todo of todos) {
+        const li = document.createElement("li");
+        li.className = `item${todo.done ? " done" : ""}`;
+
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.className = "check";
+        checkbox.checked = todo.done;
+        checkbox.setAttribute("aria-label", `${todo.text} 완료 표시`);
+        checkbox.addEventListener("change", () => toggleTodo(todo.id));
+
+        const text = document.createElement("div");
+        text.className = "text";
+        text.textContent = todo.text;
+
+        const del = document.createElement("button");
+        del.className = "delete-btn";
+        del.type = "button";
+        del.textContent = "삭제";
+        del.addEventListener("click", () => deleteTodo(todo.id));
+
+        li.appendChild(checkbox);
+        li.appendChild(text);
+        li.appendChild(del);
+        list.appendChild(li);
+      }
+
+      emptyState.classList.toggle("show", todos.length === 0);
+      renderStats();
+    }
+
+    addBtn.addEventListener("click", addTodo);
+    input.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        addTodo();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
