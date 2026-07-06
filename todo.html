@@ -141,6 +141,23 @@
       background: rgba(15, 23, 42, 0.45);
     }
 
+    .toggle-btn {
+      padding: 8px 12px;
+      min-height: auto;
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.45);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .toggle-btn.active {
+      border-color: rgba(56, 189, 248, 0.45);
+      background: rgba(56, 189, 248, 0.14);
+      color: #bae6fd;
+    }
+
     .list {
       list-style: none;
       margin: 0;
@@ -248,6 +265,7 @@
       <div class="stat" id="totalStat">전체 0개</div>
       <div class="stat" id="activeStat">진행 중 0개</div>
       <div class="stat" id="doneStat">완료 0개</div>
+      <button class="toggle-btn" id="hideDoneBtn" type="button" aria-pressed="false">완료 숨기기</button>
     </div>
 
     <ul class="list" id="todoList" aria-label="할 일 목록"></ul>
@@ -266,8 +284,10 @@
     const totalStat = document.getElementById("totalStat");
     const activeStat = document.getElementById("activeStat");
     const doneStat = document.getElementById("doneStat");
+    const hideDoneBtn = document.getElementById("hideDoneBtn");
 
     let todos = loadTodos();
+    let hideDone = loadHideDone();
 
     function loadTodos() {
       try {
@@ -280,6 +300,18 @@
 
     function saveTodos() {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    }
+
+    function loadHideDone() {
+      try {
+        return localStorage.getItem(`${STORAGE_KEY}:hideDone`) === "true";
+      } catch {
+        return false;
+      }
+    }
+
+    function saveHideDone() {
+      localStorage.setItem(`${STORAGE_KEY}:hideDone`, String(hideDone));
     }
 
     function createId() {
@@ -319,6 +351,12 @@
       render();
     }
 
+    function toggleHideDone() {
+      hideDone = !hideDone;
+      saveHideDone();
+      render();
+    }
+
     function renderStats() {
       const total = todos.length;
       const done = todos.filter((todo) => todo.done).length;
@@ -327,12 +365,17 @@
       totalStat.textContent = `전체 ${total}개`;
       activeStat.textContent = `진행 중 ${active}개`;
       doneStat.textContent = `완료 ${done}개`;
+      hideDoneBtn.textContent = hideDone ? "완료 보이기" : "완료 숨기기";
+      hideDoneBtn.classList.toggle("active", hideDone);
+      hideDoneBtn.setAttribute("aria-pressed", String(hideDone));
     }
 
     function render() {
       list.innerHTML = "";
 
-      for (const todo of todos) {
+      const visibleTodos = hideDone ? todos.filter((todo) => !todo.done) : todos;
+
+      for (const todo of visibleTodos) {
         const li = document.createElement("li");
         li.className = `item${todo.done ? " done" : ""}`;
 
@@ -359,11 +402,17 @@
         list.appendChild(li);
       }
 
-      emptyState.classList.toggle("show", todos.length === 0);
+      const hasAnyTodos = todos.length > 0;
+      const hasVisibleTodos = visibleTodos.length > 0;
+      emptyState.textContent = hideDone && hasAnyTodos && !hasVisibleTodos
+        ? "완료된 항목이 모두 숨겨져 있습니다. '완료 보이기'를 눌러 다시 확인할 수 있습니다."
+        : "아직 등록된 할 일이 없습니다. 위에 내용을 입력해 추가하세요.";
+      emptyState.classList.toggle("show", !hasVisibleTodos);
       renderStats();
     }
 
     addBtn.addEventListener("click", addTodo);
+    hideDoneBtn.addEventListener("click", toggleHideDone);
     input.addEventListener("keydown", (event) => {
       if (event.key === "Enter") {
         addTodo();
